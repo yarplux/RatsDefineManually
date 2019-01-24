@@ -1,0 +1,2 @@
+python mainTK.py
+PAUSE

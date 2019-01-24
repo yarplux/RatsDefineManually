@@ -1,0 +1,17 @@
+#
+size x0 121
+
+#
+size x0_Max 240
+
+#
+size y0 20
+
+#
+size y0_Max 220
+
+#
+size width 418
+
+#
+size height 425

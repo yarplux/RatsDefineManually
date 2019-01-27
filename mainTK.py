@@ -3,9 +3,9 @@ from tkinter import messagebox
 
 import cv2
 import os
-import PIL.Image
-import PIL.ImageTk
 import numpy as np
+
+from PIL import Image, ImageTk, ImageDraw, ImageColor
 
 import constants as cs
 import config as cfg
@@ -134,6 +134,7 @@ class MainWindow(Win):
     ti = [None]*2           # time start/end image list
 
     si = None               # temp source image
+
     ca = None               # current action
 
 #
@@ -182,7 +183,12 @@ class MainWindow(Win):
         self.divider.set(0)
 
         for text in self.MODES:
-            b = tk.Radiobutton(self.frame_settings, text=text, variable=self.divider, value=self.MODES.index(text))
+            b = tk.Radiobutton(
+                self.frame_settings,
+                text=text,
+                variable=self.divider,
+                value=self.MODES.index(text),
+                command=self.ch_divider)
             b.pack(fill=tk.X, padx=10, pady=3)
 
         # Create a canvas that can fit the above video source size
@@ -226,6 +232,8 @@ class MainWindow(Win):
 
         # self.frame_time.pack()
         tk.Canvas(self.frame_time, bg='black', width=cs.TIME_AREA[4], height=cs.TIME_AREA[5]).pack(anchor=tk.N)
+        tk.Label(self.frame_time, text='Пересечений(+/-/del):', font="Helvetica 14").pack(side=tk.LEFT)
+        tk.Label(self.frame_time, text='0', font="Helvetica 14").pack(side=tk.RIGHT)
         # tk.Entry(self.frame_time, font="Helvetica 14").pack(anchor=tk.N)
         # tk.Canvas(self.frame_time, bg='black').pack(anchor=tk.N)
         # tk.Entry(self.frame_time, font="Helvetica 14").pack(anchor=tk.N)
@@ -254,6 +262,10 @@ class MainWindow(Win):
         # self.window.bind('<Button-3>', self.unfocus)
         # self.window.bind('<Key>', self.action_start_but)
         # self.window.bind('<Return>', self.enter)
+
+        self.window.bind('=', self.plus)
+        self.window.bind('-', self.minus)
+        self.window.bind('<Delete>', self.clear)
 
         self.update()
         self.next_loop()
@@ -309,6 +321,18 @@ class MainWindow(Win):
             d = cs.OPT_PROC['FrameDelta']
             self.slider.set(x+d)
 
+    def plus(self, event):
+        value = int(self.frame_time.winfo_children()[2].cget('text'))
+        self.frame_time.winfo_children()[2].config(text=str(value+1))
+
+    def minus(self, event):
+        value = int(self.frame_time.winfo_children()[2].cget('text'))
+        if (value > 0):
+            self.frame_time.winfo_children()[2].config(text=str(value-1))
+
+    def clear(self, event):
+        self.frame_time.winfo_children()[2].config(text='0')
+
     def up(self, event):
         self.sliders['FrameDelta'].set(self.sliders['FrameDelta'].get()+1)
 
@@ -359,25 +383,25 @@ class MainWindow(Win):
             self.paused = True
 
         if ret:
-            frame1 = frame[
+            im = Image.fromarray(frame[
                      cs.OPT_PROC['y0']:cs.OPT_PROC['y0'] + cs.OPT_PROC['height'],
-                     cs.OPT_PROC['x0']:cs.OPT_PROC['x0'] + cs.OPT_PROC['width']]
+                     cs.OPT_PROC['x0']:cs.OPT_PROC['x0'] + cs.OPT_PROC['width']])
+
+            image = ImageDraw.Draw(im)
 
             if int(self.divider.get()) == 1:
-                cv2.line(frame1, (int(np.size(frame1, 0) / 2), 0), (int(np.size(frame1, 0) / 2), int(self.vid.height)),
-                         (0, 255, 0), 2)
+                image.line((im.size[0]/2, 0, im.size[0]/2, im.size[1]), fill=(0,255,0,255), width=2)
             else:
-                cv2.line(frame1, (0, int(np.size(frame1, 1) / 2)), (int(self.vid.width), int(np.size(frame1, 1) / 2)),
-                         (0, 255, 0), 2)
+                image.line((0, im.size[1] / 2, im.size[0], im.size[1] / 2), fill=(0,255,0,255), width=2)
 
-            self.si = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(frame1))
+            self.si = ImageTk.PhotoImage(image=im)
             self.canvas_source.create_image(
                 int(self.vid.width/2),
                 int(self.vid.height/2),
                 image=self.si, anchor=tk.CENTER)
 
             # TODO simple отображение времени
-            self.ti = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(MyVideo.frame.copy())
+            self.ti = ImageTk.PhotoImage(image=Image.fromarray(MyVideo.frame.copy())
                                                     .crop(tuple(cs.TIME_AREA[0:4]))
                                                     .resize(tuple(cs.TIME_AREA[4:])))
 
@@ -408,6 +432,9 @@ class MainWindow(Win):
         cs.OPT_PROC[name] = x
         if self.paused and (name != 'delay' and name != 'FrameDelta'):
             self.update()
+
+    def ch_divider(self):
+        self.update()
 
 #
 # Action functions______________________________________________________________________________________________________

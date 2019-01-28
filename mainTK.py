@@ -280,6 +280,9 @@ class MainWindow(Win):
             self.init_settings_sliders(False)
             self.vid = MyVideo(cfg.video_name)
             self.slider.set(1)
+            self.slider.config(to=self.vid.length)
+            self.clear()
+            self.update()
 
     def help(self, name, widget):
         WinHelp(tk.Toplevel(self.window), name, widget)

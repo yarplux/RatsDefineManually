@@ -1,17 +1,20 @@
 #
-size x0 121
+x0 121
 
 #
-size x0_Max 240
+x0_Max 240
 
 #
-size y0 20
+y0 20
 
 #
-size y0_Max 220
+y0_Max 220
 
 #
-size width 418
+width 418
 
 #
-size height 425
+height 425
+
+#
+divider 0

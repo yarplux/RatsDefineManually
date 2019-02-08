@@ -1,6 +1,6 @@
 TIME_AREA = [208, 0, 310, 24, 200, 50]
 
-VERSION = 'simple_2.0'
+VERSION = 'simple_2.1'
 
 TEXT_HELP = 'ESC - выход\n\n' + \
             'F1 - Помощь\n\n' + \

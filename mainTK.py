@@ -28,7 +28,7 @@ class MainWindow(Win):
 
     command_stack = []
 
-    def __init__(self, window=tk.Tk(), window_title='Наблюдение за крысами'):
+    def __init__(self, window=tk.Tk(), window_title='Наблюдение за крысами '+cs.VERSION):
         Win.__init__(self, window, window_title, True)
 
         cfg.init_general()

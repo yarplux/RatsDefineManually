@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
-from collections import OrderedDict
+
+import cv2
+import numpy as np
 
 import os
 
@@ -243,9 +245,6 @@ class MainWindow(Win):
         if not isinstance(event.widget, tk.Entry):
             self.command_stack.append([command, -1])
             value = int(widget.cget('text')) + 1
-            # if widget is self.counter2:
-            #     self.counter1.config(text=str(int(self.counter1.cget('text'))+1))
-
             widget.config(text=str(value))
 
     def minus(self, event, widget, command):
@@ -253,19 +252,12 @@ class MainWindow(Win):
             self.command_stack.append([command, 1])
             value = int(widget.cget('text')) - 1
             if value >= 0:
-                # if widget is self.counter2:
-                #     self.counter1.config(text=str(int(self.counter1.cget('text')) - 1))
-
                 widget.config(text=str(value))
 
     def clear(self, event, widget, command):
         if not isinstance(event.widget, tk.Entry):
             value = int(widget.cget('text'))
             self.command_stack.append([command, value])
-            # if widget is self.counter2:
-            #     value = int(self.counter1.cget('text'))-value
-            #     self.counter1.config(text=str(value if value > 0 else 0))
-
             widget.config(text='0')
 
     def enter(self, event):
@@ -314,7 +306,6 @@ class MainWindow(Win):
 
         if name is None:
             name=cfg.video_name
-
 
         if not os.path.exists(dir):
             os.makedirs(dir)
@@ -406,7 +397,7 @@ class MainWindow(Win):
                 int(self.vid.height/2),
                 image=self.si, anchor=tk.CENTER)
 
-            self.ti = ImageTk.PhotoImage(image=Image.fromarray(MyVideo.frame.copy())
+            self.ti = ImageTk.PhotoImage(image=Image.fromarray(self.img_filter(frame))
                                                     .crop(tuple(cs.TIME_AREA[0:4]))
                                                     .resize(tuple(cs.TIME_AREA[4:])))
 
@@ -447,11 +438,11 @@ class MainWindow(Win):
 
         results_name = cfg.results_dir + '/results_' + cfg.video_name[cfg.video_name.rfind('/') + 1:-4] + '.csv'
         if not os.path.exists(results_name):
-            text = 'Журнал:\n'
-            text += 'Файл; ' + cfg.video_name[cfg.video_name.rfind('/') + 1:] + '\n'
+            text = 'Journal:\n'
+            text += 'File; ' + cfg.video_name[cfg.video_name.rfind('/') + 1:] + '\n'
             path = cfg.video_name[:cfg.video_name.rfind('/')]
-            text += 'Папка; ' + cfg.video_name[path.rfind('/') + 1:cfg.video_name.rfind('/')] + '\n'
-            text += '\nОт; До; Пересечений; Полных пересечений;\n---'
+            text += 'Folder; ' + cfg.video_name[path.rfind('/') + 1:cfg.video_name.rfind('/')] + '\n'
+            text += '\nFrom; To; Motion; Full Motion;\n---'
         else:
             f = open(results_name, 'r')
             text = f.read()
@@ -466,6 +457,33 @@ class MainWindow(Win):
 
     def ch_divider(self):
         self.update()
+
+#
+# Video functions_______________________________________________________________________________________________________
+
+    def img_filter(self, img, blured=False):
+        # Размытие
+        if blured:
+            blurGauss = cv2.GaussianBlur(img, (3, 3), 0)
+        else:
+            blurGauss = img
+
+        # Преобразуем RGB картинку в HSV модель
+        imgHsv = cv2.cvtColor(blurGauss, cv2.COLOR_BGR2HSV)
+
+        # Получение данных с движков настройки
+        h1 = cfg.opt_process['h1']
+        s1 = cfg.opt_process['s1']
+        v1 = cfg.opt_process['v1']
+        h2 = cfg.opt_process['h2']
+        s2 = cfg.opt_process['s2']
+        v2 = cfg.opt_process['v2']
+
+        # формируем начальный и конечный цвет фильтра
+        colHSV_Min = np.array((h1, s1, v1), np.uint8)
+        colHSV_Max = np.array((h2, s2, v2), np.uint8)
+
+        return cv2.inRange(imgHsv, colHSV_Min, colHSV_Max)
 
 
 # Старт программы

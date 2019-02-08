@@ -1,5 +1,7 @@
 TIME_AREA = [208, 0, 310, 24, 200, 50]
 
+VERSION = 'simple_2.0'
+
 TEXT_HELP = 'ESC - выход\n\n' + \
             'F1 - Помощь\n\n' + \
             'F2 - Открыть видео\n\n' + \
@@ -35,6 +37,8 @@ DIALOG_TEXT_SAVE_TRACK = 'Cохранить текущий трек?'
 DIALOG_TEXT_SAVE_OPTIONS = 'Cохранить текущие настройки обработки видео?'
 DIALOG_TEXT_SAVE_GENERAL = 'Cохранить текущие общие настройки ( + текущий список движений)?'
 DIALOG_TEXT_SAVE_OPTIONS_DEFAULT = 'Сохранить как настройки обработки по-умолчанию?'
+
+DIALOG_TEXT_ERROR_VERSION = 'Файл опций старой версии. Загружены настройки по-умолчанию'
 
 DIR_OPTIONS = './options'
 DIR_TRACKS = './tracks'

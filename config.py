@@ -1,6 +1,7 @@
 import os
 
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
+
 from collections import OrderedDict
 
 import constants as cs
@@ -29,10 +30,17 @@ def init_const():
         'x0': 'Обрезка слева',
         'width': 'Ширина',
         'y0': 'Обрезка сверху',
-        'height': 'Высота'
+        'height': 'Высота',
+        'h1': 'Фильтр тона (мин)',
+        'h2': 'Фильтр тона (макс)',
+        's1': 'Фильтр насыщенности (мин)',
+        's2': 'Фильтр насыщенности (макс)',
+        'v1': ' Фильтр яркости (мин)',
+        'v2': ' Фильтр яркости (макс)'
     })
 
     opt_process = {
+        'version': cs.VERSION,
         'delay': 1,
         'delay_Max': 500,
         'FrameDelta': 10,
@@ -78,6 +86,10 @@ def init_options():
     options_name = options_dir + '/options_' + video_name[video_name.rfind('/') + 1:-4] + '.txt'
     if not (os.path.exists(options_dir) and os.path.isfile(options_name)):
         options_name = cs.FILE_OPTIONS_DEFAULT
+    else:
+        if not version_check(options_name):
+            messagebox.showinfo(cs.DIALOG_TITLE_GENERAL, cs.DIALOG_TEXT_ERROR_VERSION)
+            options_name = cs.FILE_OPTIONS_DEFAULT
 
     file_options = open(options_name, 'r')
     line = file_options.readline()
@@ -86,19 +98,31 @@ def init_options():
             line = line.replace('\n', '')
             words = line.split(' ')
 
-            # TODO Для совместимости с предыдущей версией
-            if words[0] == "size":
-                opt_process[words[1]] = int(words[2])
-            else:
-                try:
-                    opt_process[words[0]] = int(words[1])
-                except ValueError:
-                    pass
-                # except Exception:
-                #     pass
+            try:
+                value = int(words[1])
+                opt_process[words[0]] = value
+            except Exception:
+                pass
 
         line = file_options.readline()
     file_options.close()
 
     print(opt_process)
     return True
+
+
+def version_check(name):
+    file_options = open(name, 'r')
+    line = file_options.readline()
+    check = False
+
+    while line:
+        if line[0] != '#' and line != "\n":
+            line = line.replace('\n', '')
+            words = line.split(' ')
+            if words[0] == 'version' and opt_process[words[0]] == words[1]:
+                check = True
+
+        line = file_options.readline()
+    file_options.close()
+    return check
